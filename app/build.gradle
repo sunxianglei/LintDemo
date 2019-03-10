@@ -1,0 +1,127 @@
+//import com.example.buildsrc.TestPlugin;
+apply plugin: 'com.android.application'
+apply plugin: 'com.sun.test'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
+    defaultConfig {
+        applicationId "com.example.lintdemo"
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                includeCompileClasspath true
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    lintOptions {
+        abortOnError false
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+//    implementation 'com.android.tools.build:gradle:3.3.1'
+//    testImplementation 'junit:junit:4.12'
+//    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+//    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation project(':lintaar')
+}
+
+
+task(sunxianglei).doLast {
+    println "start execute sun"
+    haveFun()
+}
+
+def haveFun() {
+    Book b = new Book()
+    b.name = "sxl"
+    println b.name
+}
+
+class Book {
+    private String name;
+}
+
+
+task a {
+    println "i'm a task"
+}
+
+task testBoth {
+    // 依赖 a task 先执行
+    dependsOn("a")
+    println 'b task, 会在 Configuration 和 Execution 阶段都会执行'
+    doFirst {
+        println '我仅会在 testBoth 的 Execution 阶段执行， First'
+    }
+    doLast {
+        println '我仅会在 testBoth 的 Execution 阶段执行， Last'
+    }
+}
+
+class Greeting extends DefaultTask {
+    String greeting = "hello hello nizhan lai ye"
+
+    @TaskAction
+    def greet() {
+        println greeting
+    }
+}
+
+task greetingTask(type: Greeting) {
+    greeting = "come come nizhan"
+    doFirst {
+        def lists = getActions()
+        lists.each {
+            println it.displayName
+        }
+    }
+    doLast {
+
+    }
+}
+
+task showInstallDepends {
+    doFirst {
+        println project.tasks.findByName("installDebug").dependsOn
+    }
+}
+
+task hookAsserts {
+    afterEvaluate {
+        println "afterEvaluate hookAssets"
+        tasks.findByName("packageDebug").doFirst { task ->
+            copy {
+                println projectDir.absolutePath
+                from "${projectDir.absolutePath}/AsyncTask.png"
+                into "${task.assets.files.path}"
+                println task.assets.files.path
+            }
+        }
+    }
+}
+
